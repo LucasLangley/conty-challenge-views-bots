@@ -92,11 +92,11 @@ export function classify(series: number[], startAt?: Date): Classification {
   ];
   const signals = evaluated.map((e) => e.signal);
   const nota = zeragem ? ` Obs.: ${zerou.resumo}; analisei só as ${horas(analyzed.length)} anteriores.` : "";
-  const { label, reason } = decide(evaluated, ctx.median);
+  const { label, reason } = decide(evaluated, ctx.median, startAt !== undefined);
   return { label, reason: reason + nota, signals };
 }
 
-function decide(evaluated: Evaluated[], median: number): { label: Label; reason: string } {
+function decide(evaluated: Evaluated[], median: number, temHorario: boolean): { label: Label; reason: string } {
   const hits = evaluated.filter((e) => e.signal.triggered && PESO[e.signal.name] !== "contexto");
   const fortes = hits.filter((e) => PESO[e.signal.name] === "forte");
   const resumo = hits.map((e) => e.resumo).join("; ");
@@ -127,11 +127,17 @@ function decide(evaluated: Evaluated[], median: number): { label: Label; reason:
   if (grupos.size === 1) {
     const [[hipotese, resumos]] = [...grupos];
     const { descricao, outraExplicacao } = LEITURA[hipotese];
+    // Sem o horário, compra em bloco e live têm o mesmo formato; o que as separaria é o pico cair de madrugada.
+    const semHorario =
+      hipotese === "fim_do_pico" && !temHorario
+        ? " Sem start_at não dá para saber se o pico caiu de madrugada, que é o que separaria uma compra de uma live; envie start_at para essa checagem."
+        : "";
     return {
       label: "inconclusivo",
       reason:
         `Inconclusivo: só uma hipótese de tráfego não humano apareceu, ${descricao} (${resumos.join("; ")}), ` +
-        `e uma hipótese sozinha não basta para acusar. ${outraExplicacao} Os demais sinais avaliados estão dentro do esperado.`,
+        `e uma hipótese sozinha não basta para acusar. ${outraExplicacao} Os demais sinais avaliados estão dentro do esperado.` +
+        semHorario,
     };
   }
   if (median < LIMIARES.volumeMinimo) {

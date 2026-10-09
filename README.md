@@ -20,7 +20,7 @@ npm run dev       # API em http://127.0.0.1:3009 (PORT muda a porta)
 
 ### `POST /classify`
 
-Corpo: `series` (lista de views por hora, números ≥ 0, até 2.160 horas) e `start_at` opcional (ISO 8601, o instante da primeira hora). Sem `start_at`, os dois sinais que dependem do relógio de São Paulo ficam como não avaliados e o resto vale igual.
+Corpo: `series` (lista de views por hora, números ≥ 0, até 2.160 horas) e `start_at` opcional (ISO 8601, o instante da primeira hora). Sem `start_at`, os dois sinais que dependem do relógio de São Paulo ficam como não avaliados e o resto vale igual. A consequência: uma compra em bloco vira `inconclusivo`, porque sem o horário ela tem o mesmo formato de uma live, e o motivo pede o `start_at`.
 
 Exemplos gerados rodando o app (`npm start`) com séries de 72 h a partir de segunda, 00h em São Paulo.
 
@@ -212,6 +212,7 @@ Calibrei os limiares olhando esta seed. Para não ficar só nela, rodei a mesma 
 - **Compra pequena** (`pico_comprado_pequeno`, 1×–2,5× o horário nobre): 2 de 40 suspeitos, 17 passam como legítimos. Abaixo de 4× a mediana não existe "pico", e as bordas somem no ruído.
 - **Bots misturados ao público em proporção pequena e constante**: só sobem o nível. Nada no formato muda.
 - **Viral que estoura de madrugada e sai da recomendação** é acusado: formato e horário são duas hipóteses independentes, e as duas batem com compra de madrugada desligada (5 de 40 `viral_cortado`).
+- **Série sem `start_at`**: sem o horário, não dá para saber se o pico caiu de madrugada. Compra em bloco e live ficam iguais, e o resultado é `inconclusivo`; o motivo diz isso e pede o `start_at` (há teste).
 - **Público fora de São Paulo**: os dois sinais de fuso supõem público no Brasil. Por isso contam como um só e não acusam sozinhos, mas ainda podem somar com outro sinal (o falso positivo acima).
 - O dataset é sintético e foi feito por mim, com as mesmas hipóteses que guiaram as regras. A taxa medida mostra a coerência entre classificador e geradores, não a taxa no mundo real.
 

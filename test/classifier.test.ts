@@ -232,6 +232,8 @@ describe("explicação legível", () => {
     expect(signal(comprado, "simetria_subida_queda").triggered).toBe(true);
     expect(signal(comprado, "queda_abrupta").triggered).toBe(true);
     expect(comprado.label).toBe("inconclusivo");
+    expect(comprado.reason).toContain("envie start_at");
+    expect(classify(picoComprado(), START).reason).not.toContain("envie start_at");
     expect(signal(comprado, "queda_abrupta").explanation).toContain("da hora 104 da série");
   });
 });
