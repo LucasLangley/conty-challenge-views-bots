@@ -40,20 +40,26 @@ export const PESO: Record<SignalName, Peso> = {
   periodicidade_exata: "forte",
 };
 
-// Sinais que dependem da mesma hipótese contam como um só. Ritmo e pico na madrugada
-// supõem público em São Paulo: com público em outro fuso, os dois disparam juntos.
-export const HIPOTESE: Record<SignalName, string> = {
+// Sinais que dependem da mesma hipótese contam como um só.
+// fim_do_pico: simetria e queda abrupta medem as duas o pico terminar de uma vez; live, estreia
+// e vídeo que sai da recomendação disparam as duas juntas.
+// serie_plana: platô e coeficiente de variação medem os dois a falta de variação, em trecho e na série inteira.
+// fuso_sao_paulo: ritmo e pico na madrugada supõem público em São Paulo; com público em outro fuso,
+// os dois disparam juntos.
+export const HIPOTESE = {
   views_zeradas: "views_zeradas",
   pico_sobre_mediana: "pico_sobre_mediana",
-  simetria_subida_queda: "simetria_subida_queda",
-  plato: "plato",
-  queda_abrupta: "queda_abrupta",
+  simetria_subida_queda: "fim_do_pico",
+  plato: "serie_plana",
+  queda_abrupta: "fim_do_pico",
   ritmo_circadiano: "fuso_sao_paulo",
   pico_na_madrugada: "fuso_sao_paulo",
-  coeficiente_variacao: "coeficiente_variacao",
+  coeficiente_variacao: "serie_plana",
   valores_repetidos: "valores_repetidos",
   periodicidade_exata: "periodicidade_exata",
-};
+} as const satisfies Record<SignalName, string>;
+
+export type Hipotese = (typeof HIPOTESE)[SignalName];
 
 export type Evaluated = { signal: Signal; resumo: string };
 

@@ -1,25 +1,25 @@
 {
   "seed": 20261009,
   "series_por_gerador": 40,
-  "series": 520,
+  "series": 600,
   "legitimos": {
-    "total": 280,
+    "total": 360,
     "legitimo": 189,
-    "suspeito": 1,
-    "inconclusivo": 90
+    "suspeito": 6,
+    "inconclusivo": 165
   },
   "suspeitos": {
     "total": 240,
     "legitimo": 58,
-    "suspeito": 164,
-    "inconclusivo": 18
+    "suspeito": 131,
+    "inconclusivo": 51
   },
-  "taxaFalsoPositivo": 0.0035714285714285713,
-  "recall": 0.6833333333333333,
-  "inconclusivos": 108,
+  "taxaFalsoPositivo": 0.016666666666666666,
+  "recall": 0.5458333333333333,
+  "inconclusivos": 216,
   "centrais": {
     "taxaFalsoPositivo": 0,
-    "recall": 0.95625
+    "recall": 0.80625
   },
   "porGerador": [
     {
@@ -86,13 +86,31 @@
       "inconclusivo": 7
     },
     {
+      "generator": "viral_cortado",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 0,
+      "suspeito": 5,
+      "inconclusivo": 35
+    },
+    {
+      "generator": "live_estreia",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 0,
+      "suspeito": 0,
+      "inconclusivo": 40
+    },
+    {
       "generator": "pico_comprado",
       "truth": "suspeito",
       "limitrofe": false,
       "total": 40,
       "legitimo": 0,
-      "suspeito": 40,
-      "inconclusivo": 0
+      "suspeito": 20,
+      "inconclusivo": 20
     },
     {
       "generator": "plato_bots",
@@ -100,8 +118,8 @@
       "limitrofe": false,
       "total": 40,
       "legitimo": 1,
-      "suspeito": 33,
-      "inconclusivo": 6
+      "suspeito": 32,
+      "inconclusivo": 7
     },
     {
       "generator": "repeticao_mecanica",
@@ -118,8 +136,8 @@
       "limitrofe": false,
       "total": 40,
       "legitimo": 0,
-      "suspeito": 40,
-      "inconclusivo": 0
+      "suspeito": 37,
+      "inconclusivo": 3
     },
     {
       "generator": "pico_comprado_pequeno",
@@ -127,8 +145,8 @@
       "limitrofe": true,
       "total": 40,
       "legitimo": 17,
-      "suspeito": 11,
-      "inconclusivo": 12
+      "suspeito": 2,
+      "inconclusivo": 21
     },
     {
       "generator": "bots_imitando_ritmo",
@@ -141,6 +159,11 @@
     }
   ],
   "falsosPositivos": [
-    "audiencia_global-023"
+    "audiencia_global-023",
+    "viral_cortado-003",
+    "viral_cortado-007",
+    "viral_cortado-030",
+    "viral_cortado-035",
+    "viral_cortado-037"
   ]
 }

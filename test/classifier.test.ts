@@ -6,6 +6,7 @@ import {
   audienciaGlobal,
   baixoVolume,
   cicloCopiado,
+  live,
   organicoEstavel,
   picoComprado,
   platoDeBots,
@@ -13,6 +14,7 @@ import {
   START,
   valorConstante,
   videoRemovido,
+  viralCortado,
   viralOrganico,
 } from "./fixtures.ts";
 
@@ -137,6 +139,34 @@ describe("quando o classificador prefere não acusar", () => {
     expect(result.label).toBe("inconclusivo");
   });
 
+  it("viral que o algoritmo para de recomendar 4 h depois do topo não é suspeito", () => {
+    const result = classify(viralCortado(), START);
+    // Sobe em 1 h e cai de uma vez: as duas medidas do fim do pico disparam, mas contam como uma.
+    expect(signal(result, "simetria_subida_queda").triggered).toBe(true);
+    expect(signal(result, "queda_abrupta").triggered).toBe(true);
+    expect(result.label).toBe("inconclusivo");
+    expect(result.reason).toContain("o algoritmo parando de recomendar o vídeo");
+  });
+
+  it.each([1, 2, 3])("live de %i h às 20h não é suspeita", (hours) => {
+    const result = classify(live(hours), START);
+    expect(signal(result, "simetria_subida_queda").triggered).toBe(true);
+    expect(signal(result, "pico_na_madrugada").triggered).toBe(false);
+    expect(result.label).toBe("inconclusivo");
+    expect(result.reason).toContain("Pode ser uma live ou estreia");
+  });
+
+  it("live de 1 h e de 2 h recebem o mesmo raciocínio, mesmo com a de 2 h disparando um sinal a mais", () => {
+    const uma = classify(live(1), START);
+    const duas = classify(live(2), START);
+    expect(signal(uma, "queda_abrupta").triggered).toBe(false);
+    expect(signal(duas, "queda_abrupta").triggered).toBe(true);
+    // Fora os números entre parênteses, o motivo é o mesmo texto.
+    const semNumeros = (reason: string) => reason.replace(/\(.*\)/, "(...)");
+    expect(semNumeros(duas.reason)).toBe(semNumeros(uma.reason));
+    expect(uma.reason).toMatch(/^Inconclusivo: só uma hipótese de tráfego não humano apareceu, as views pararam de uma vez \(/);
+  });
+
   it("série com menos de 48 h é inconclusiva e não usa sinal nenhum", () => {
     const result = classify(organicoEstavel().slice(0, 30), START);
     expect(result).toEqual({
@@ -198,7 +228,10 @@ describe("explicação legível", () => {
     expect(signal(organico, "ritmo_circadiano")).toMatchObject({ value: null, triggered: false });
     expect(signal(organico, "ritmo_circadiano").explanation).toContain("Sem start_at");
     expect(organico.label).toBe("legitimo");
-    expect(comprado.label).toBe("suspeito");
+    // Sem a hora, sobra só o formato: ligado e desligado é uma hipótese só, a mesma de uma live.
+    expect(signal(comprado, "simetria_subida_queda").triggered).toBe(true);
+    expect(signal(comprado, "queda_abrupta").triggered).toBe(true);
+    expect(comprado.label).toBe("inconclusivo");
     expect(signal(comprado, "queda_abrupta").explanation).toContain("da hora 104 da série");
   });
 });

@@ -66,3 +66,17 @@ export function videoRemovido(): number[] {
   const series = viralOrganico();
   return series.map((v, t) => (t >= 110 ? (t % 7 === 0 ? 1 : 0) : v));
 }
+
+// O mesmo viral da quinta às 18h, mas o algoritmo para de recomendar 4 h depois do topo:
+// sobe em 1 h, decai por 4 h e volta de uma vez ao público de antes.
+export function viralCortado(): number[] {
+  const { f, rates } = base(7);
+  const viral = addViral(f, rates, { at: 90, amplitude: 3000, riseHours: 1, halfLife: 10 });
+  return noisy(f, viral.map((r, t) => (t >= 94 ? rates[t] : r)), 0.1);
+}
+
+// Live ou estreia às 20h de quarta, com ~3.000 pessoas a mais por hora enquanto dura.
+export function live(hours: number): number[] {
+  const { f, rates } = base(7);
+  return noisy(f, rates.map((r, t) => (t >= 68 && t < 68 + hours ? r + 3000 : r)), 0.1);
+}

@@ -15,8 +15,8 @@ import {
   valoresRepetidos,
   viewsZeradas,
   type Evaluated,
+  type Hipotese,
   type Signal,
-  type SignalName,
 } from "./signals.ts";
 import { LIMIARES } from "./thresholds.ts";
 
@@ -28,18 +28,26 @@ export type Classification = {
   signals: Signal[];
 };
 
-// Dica para quem lê um inconclusivo: o que mais explicaria o único sinal que disparou.
-const OUTRA_EXPLICACAO: Record<SignalName, string> = {
-  views_zeradas: "",
-  pico_sobre_mediana: "",
-  simetria_subida_queda: "Pode ser uma live ou estreia, que começa e termina em hora marcada.",
-  plato: "Pode ser público grande e muito estável; vale olhar a série inteira.",
-  queda_abrupta: "Pode ser o vídeo removido, arquivado ou fora da recomendação.",
-  ritmo_circadiano: "Pode ser público de outro fuso horário.",
-  pico_na_madrugada: "Pode ser um vídeo que estourou em outro fuso horário.",
-  coeficiente_variacao: "Pode ser público grande e espalhado por vários fusos.",
-  valores_repetidos: "",
-  periodicidade_exata: "",
+// Como cada hipótese aparece no motivo, e o que mais a explicaria num inconclusivo.
+// Só as hipóteses dos sinais fracos chegam aqui: forte decide sozinho e contexto não conta.
+const LEITURA: Record<Hipotese, { descricao: string; outraExplicacao: string }> = {
+  views_zeradas: { descricao: "", outraExplicacao: "" },
+  pico_sobre_mediana: { descricao: "", outraExplicacao: "" },
+  fim_do_pico: {
+    descricao: "as views pararam de uma vez",
+    outraExplicacao:
+      "Pode ser uma live ou estreia, que começa e termina em hora marcada, ou o algoritmo parando de recomendar o vídeo.",
+  },
+  serie_plana: {
+    descricao: "a série é plana demais",
+    outraExplicacao: "Pode ser público grande, estável e espalhado por vários fusos; vale olhar a série inteira.",
+  },
+  fuso_sao_paulo: {
+    descricao: "o horário não bate com público em São Paulo",
+    outraExplicacao: "Pode ser público de outro fuso horário, ou um vídeo que estourou fora do Brasil.",
+  },
+  valores_repetidos: { descricao: "", outraExplicacao: "" },
+  periodicidade_exata: { descricao: "", outraExplicacao: "" },
 };
 
 export function classify(series: number[], startAt?: Date): Classification {
@@ -92,7 +100,6 @@ function decide(evaluated: Evaluated[], median: number): { label: Label; reason:
   const hits = evaluated.filter((e) => e.signal.triggered && PESO[e.signal.name] !== "contexto");
   const fortes = hits.filter((e) => PESO[e.signal.name] === "forte");
   const resumo = hits.map((e) => e.resumo).join("; ");
-  const independentes = new Set(hits.map((e) => HIPOTESE[e.signal.name])).size;
 
   if (fortes.length > 0) {
     return {
@@ -102,17 +109,29 @@ function decide(evaluated: Evaluated[], median: number): { label: Label; reason:
         `${views(median)} views/h. Sinais: ${resumo}.`,
     };
   }
-  if (independentes >= 2) {
-    return { label: "suspeito", reason: `Suspeito: ${independentes} sinais independentes de tráfego não humano: ${resumo}.` };
+
+  // Sinais da mesma hipótese viram um grupo só: é o grupo que conta, não o sinal.
+  const grupos = new Map<Hipotese, string[]>();
+  for (const e of hits) {
+    const hipotese = HIPOTESE[e.signal.name];
+    grupos.set(hipotese, [...(grupos.get(hipotese) ?? []), e.resumo]);
   }
-  if (independentes === 1) {
-    const [hit] = hits;
-    const quais = hits.length === 1 ? `só um sinal disparou (${resumo})` : `só uma hipótese disparou (${resumo})`;
+
+  if (grupos.size >= 2) {
+    const frases = [...grupos].map(([h, resumos]) => `${capitalizar(LEITURA[h].descricao)}: ${resumos.join("; ")}.`);
+    return {
+      label: "suspeito",
+      reason: `Suspeito: ${grupos.size} hipóteses independentes de tráfego não humano. ${frases.join(" ")}`,
+    };
+  }
+  if (grupos.size === 1) {
+    const [[hipotese, resumos]] = [...grupos];
+    const { descricao, outraExplicacao } = LEITURA[hipotese];
     return {
       label: "inconclusivo",
       reason:
-        `Inconclusivo: ${quais}, e um sinal sozinho não basta para acusar. ` +
-        `${OUTRA_EXPLICACAO[hit.signal.name]} Os demais sinais avaliados estão dentro do esperado.`,
+        `Inconclusivo: só uma hipótese de tráfego não humano apareceu, ${descricao} (${resumos.join("; ")}), ` +
+        `e uma hipótese sozinha não basta para acusar. ${outraExplicacao} Os demais sinais avaliados estão dentro do esperado.`,
     };
   }
   if (median < LIMIARES.volumeMinimo) {
@@ -125,6 +144,10 @@ function decide(evaluated: Evaluated[], median: number): { label: Label; reason:
     };
   }
   return { label: "legitimo", reason: legitReason(evaluated) };
+}
+
+function capitalizar(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function legitReason(evaluated: Evaluated[]): string {

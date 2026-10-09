@@ -89,9 +89,14 @@ function viralOpts(f: Frame, level: number) {
   };
 }
 
-function madrugadaStart(f: Frame, min: number, max: number): number {
-  const candidates = f.sp.map((h, t) => (h >= 0 && h <= 3 && t >= min && t <= max ? t : -1)).filter((t) => t >= 0);
+// Hora da série entre `min` e `max` que cai entre `de` e `ate` em São Paulo.
+function startAtHour(f: Frame, de: number, ate: number, min: number, max: number): number {
+  const candidates = f.sp.map((h, t) => (h >= de && h <= ate && t >= min && t <= max ? t : -1)).filter((t) => t >= 0);
   return candidates.length > 0 ? pick(f.rng, candidates) : integer(f.rng, min, max);
+}
+
+function madrugadaStart(f: Frame, min: number, max: number): number {
+  return startAtHour(f, 0, 3, min, max);
 }
 
 export const GENERATORS: Generator[] = [
@@ -165,6 +170,34 @@ export const GENERATORS: Generator[] = [
       const cutAt = Math.min(f.hours - 12, opts.at + opts.riseHours + integer(f.rng, 0, 30));
       const residual = uniform(f.rng, 0, 0.02) * level;
       const rates = addViral(f, human(f, level), opts).map((r, t) => (t >= cutAt ? residual : r));
+      return noisy(f, rates, sigma(f));
+    },
+  },
+  {
+    name: "viral_cortado",
+    truth: "legitimo",
+    limitrofe: true,
+    descricao: "viral orgânico que sai da recomendação 2-6 h depois do topo: as views voltam de uma vez ao patamar de antes",
+    build: (f) => {
+      const level = logUniform(f.rng, 30, 2000);
+      const opts = viralOpts(f, level);
+      const cutAt = opts.at + opts.riseHours + integer(f.rng, 2, 6);
+      const rates = human(f, level);
+      const viral = addViral(f, rates, opts).map((r, t) => (t >= cutAt ? rates[t] : r));
+      return noisy(f, viral, sigma(f));
+    },
+  },
+  {
+    name: "live_estreia",
+    truth: "legitimo",
+    limitrofe: true,
+    descricao: "live ou estreia de 1-3 h começando entre 19h e 21h, de 5× a 30× o horário nobre: entra e sai de uma vez",
+    build: (f) => {
+      const level = logUniform(f.rng, 30, 2000);
+      const hours = integer(f.rng, 1, 3);
+      const from = startAtHour(f, 19, 21, 24, f.hours - hours - 24);
+      const amplitude = uniform(f.rng, 5, 30) * level;
+      const rates = human(f, level).map((r, t) => (t >= from && t < from + hours ? r + amplitude : r));
       return noisy(f, rates, sigma(f));
     },
   },
