@@ -1,0 +1,146 @@
+{
+  "seed": 20261009,
+  "series_por_gerador": 40,
+  "series": 520,
+  "legitimos": {
+    "total": 280,
+    "legitimo": 189,
+    "suspeito": 1,
+    "inconclusivo": 90
+  },
+  "suspeitos": {
+    "total": 240,
+    "legitimo": 58,
+    "suspeito": 164,
+    "inconclusivo": 18
+  },
+  "taxaFalsoPositivo": 0.0035714285714285713,
+  "recall": 0.6833333333333333,
+  "inconclusivos": 108,
+  "centrais": {
+    "taxaFalsoPositivo": 0,
+    "recall": 0.95625
+  },
+  "porGerador": [
+    {
+      "generator": "organico_estavel",
+      "truth": "legitimo",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 39,
+      "suspeito": 0,
+      "inconclusivo": 1
+    },
+    {
+      "generator": "viral_organico",
+      "truth": "legitimo",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 39,
+      "suspeito": 0,
+      "inconclusivo": 1
+    },
+    {
+      "generator": "crescimento_lento",
+      "truth": "legitimo",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 40,
+      "suspeito": 0,
+      "inconclusivo": 0
+    },
+    {
+      "generator": "viral_rapido",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 35,
+      "suspeito": 0,
+      "inconclusivo": 5
+    },
+    {
+      "generator": "audiencia_global",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 1,
+      "suspeito": 1,
+      "inconclusivo": 38
+    },
+    {
+      "generator": "baixo_volume",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 2,
+      "suspeito": 0,
+      "inconclusivo": 38
+    },
+    {
+      "generator": "video_removido",
+      "truth": "legitimo",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 33,
+      "suspeito": 0,
+      "inconclusivo": 7
+    },
+    {
+      "generator": "pico_comprado",
+      "truth": "suspeito",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 0,
+      "suspeito": 40,
+      "inconclusivo": 0
+    },
+    {
+      "generator": "plato_bots",
+      "truth": "suspeito",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 1,
+      "suspeito": 33,
+      "inconclusivo": 6
+    },
+    {
+      "generator": "repeticao_mecanica",
+      "truth": "suspeito",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 0,
+      "suspeito": 40,
+      "inconclusivo": 0
+    },
+    {
+      "generator": "queda_abrupta",
+      "truth": "suspeito",
+      "limitrofe": false,
+      "total": 40,
+      "legitimo": 0,
+      "suspeito": 40,
+      "inconclusivo": 0
+    },
+    {
+      "generator": "pico_comprado_pequeno",
+      "truth": "suspeito",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 17,
+      "suspeito": 11,
+      "inconclusivo": 12
+    },
+    {
+      "generator": "bots_imitando_ritmo",
+      "truth": "suspeito",
+      "limitrofe": true,
+      "total": 40,
+      "legitimo": 40,
+      "suspeito": 0,
+      "inconclusivo": 0
+    }
+  ],
+  "falsosPositivos": [
+    "audiencia_global-023"
+  ]
+}
